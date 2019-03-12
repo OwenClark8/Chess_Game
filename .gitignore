@@ -1,2 +1,13 @@
 *.[oa]
 *~
+
+
+
+
+#Ingnore build libraries
+build
+lib/*
+
+#Ignore any executables
+bin/*
+
