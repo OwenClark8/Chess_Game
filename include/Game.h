@@ -40,6 +40,8 @@ protected:
 
 	bool m_tick = true;
 
+	std::pair<Location, bool> m_lastClick = std::make_pair(Location , false); 
+
 public:
 	Game(PrintImpl* pi) : Component(pi) {};
 	~Game()    = default;

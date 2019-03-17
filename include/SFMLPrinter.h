@@ -1,20 +1,20 @@
-#ifndef COMMANDLINEPRINTERDEF
-#define COMMANDLINEPRINTERDEF
+#ifndef SFMLPRINTERDEF
+#define SFMLPRINTERDEF
 
 #include "PrintImpl.h"
-#include "CommandLinePrintLib.h"
+#include "SFMLPrintLib.h"
 
 // using PiecePrototype = std::pair<std::vector<std::string>, std::vector<std::array<int, 2>>>;
 // using SquarePrtotype = std::pair<std::vector<std::string>, Colour>;
 
-class CommandLinePrinter : public PrintImpl
+class SFMLPrinter : public PrintImpl
 {
 	using clock = std::chrono::high_resolution_clock;
 public:
-	CommandLinePrinter(std::unique_ptr<CommandLinePrintLib::Game> game) :mp_game(std::move(game))
+	SFMLPrinter(std::unique_ptr<SFMLPrintLib::Game> game) :mp_game(std::move(game))
 	{};
 
-	~CommandLinePrinter() = default;
+	~SFMLPrinter() = default;
 
 	void drawLossBoard(const std::array<std::array<int,6>, 2>& lb) override;
 
@@ -49,7 +49,7 @@ public:
 
 protected:
 
-	std::unique_ptr<CommandLinePrintLib::Game> mp_game;
+	std::unique_ptr<SFMLPrintLib::Game> mp_game;
 
 	int m_currentSquare = -1;
 
@@ -57,5 +57,4 @@ protected:
 
 
 #endif
-
 

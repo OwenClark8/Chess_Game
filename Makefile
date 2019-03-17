@@ -27,7 +27,7 @@ OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 CXXFLAGS := -g -std=c++14
 # -Wall
 #Libraries
-LIB := 
+LIB := -L/usr/lib/x86_64-linux-gnu/ -lsfml-graphics -lsfml-window -lsfml-audio -lsfml-network -lsfml-system 
 #LIB := -pthread -lmongoclient -L lib -lboost_thread-mt -lboost_filesystem-mt -lboost_system-mt
 INC := -I include
 
@@ -42,7 +42,7 @@ INC := -I include
 
 $(TARGET): $(OBJECTS)
 	@echo " Linking..."
-	@echo " $(CC) $(CXXFLAGS) -o $(TARGET) $(LIB) $(OBJECTS)"; $(CC) $(CXXFLAGS) -o $(TARGET) $(OBJECTS)
+	@echo " $(CC) $(CXXFLAGS) -o $(TARGET) $(OBJECTS) $(LIB)"; $(CC) $(CXXFLAGS) -o $(TARGET) $(OBJECTS) $(LIB)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(BUILDDIR)

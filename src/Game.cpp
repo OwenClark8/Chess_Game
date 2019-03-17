@@ -210,74 +210,89 @@ void Game::draw() const
 void Game::implementCommand(const Command& com)
 {
 	auto b = m_Comps.find(ComponentType::Board);
-	if(b != m_Comps.end())
-	{
-		auto c = dynamic_cast<Board*>(b->second.get());
-		c->unselectAll();
-
-		switch(com.m_comType)
-		{
-			case CommandType::Selection:
-			{	
-				c->selectSquare(com.m_action.select);
-				break;
-			}
-				
-			case CommandType::Movement:
-			{
-				auto type = c->getPiece(std::get<1>(com.m_action.move));
-				
-				if(m_playerTurn != std::get<Colour>(c->getPiece(std::get<0>(com.m_action.move))))
-					throw "Invalid move";
-
-				if(!c->checkMove(std::get<0>(com.m_action.move), std::get<1>(com.m_action.move)))
-					throw "Invalid move";
-
-				if(m_currentmove < m_moves.size() && !m_moves.empty())
-				{
-					auto it = m_moves.cbegin();
-					std::advance(it, m_currentmove + 1);
-					m_moves.erase(it, m_moves.cend());
-				}
-
-				if(std::get<Piece>(type) == Piece::Empty)
-				{
-					m_moves.push_back(Move(com.m_action.move, std::make_pair(false, type)));
-					if(m_moves.size() != 1)
-						++m_currentmove;
-				}
-				else
-				{
-					m_moves.push_back(Move(com.m_action.move, std::make_pair(true, type)));
-					if(m_moves.size() != 1)
-						++m_currentmove;
-				}
-				c->updateBoard(std::get<0>(com.m_action.move), std::get<1>(com.m_action.move));
-				
-				this->turnSwitch();
-				break;
-			}
-			case CommandType::Info:
-			{
-				auto b = m_Comps.find(ComponentType::Info);
-					if(b != m_Comps.end())
-						b->second->draw();
-					else
-						throw "Info unavailable";
-					break;
-			}
-			case CommandType::StateChange:
-			{
-				this->implementStateChange(com.m_action.changeState);
-				break;
-			}	
-		}
-	}
-	else
+	if(b == m_Comps.end())
 		throw "No board initialised";
+
+	auto c = dynamic_cast<Board*>(b->second.get());
+	c->unselectAll();
+
+	switch(com.m_comType)
+	{
+		case CommandType::Selection:
+		{	
+			if(!std::get<bool>(m_lastClick))
+			{
+				c->selectSquare(com.m_action.select);
+				m_lastClick = std::make_pair(com.m_action.select, true);
+			}
+			if(!c->checkMove(std::get<Location>(m_lastClick), com.m_action.select))
+			{
+				m_lastClick = std::make_pair(Location(), false);
+				this->implementCommand(com);
+			}
+			auto newCommand = std::make_unique<Command>(Command{});
+			newCommand->m_action.move = std::make_pair(std::get<Location>(m_lastClick), com.m_action.select);
+			newCommand->m_comType     = CommandType::Movement;
+			this->implementCommand(newCommand.get());
+			break;
+		}
+			
+		case CommandType::Movement:
+		{
+			auto type = c->getPiece(std::get<1>(com.m_action.move));
+			
+			if(m_playerTurn != std::get<Colour>(c->getPiece(std::get<0>(com.m_action.move))))
+				throw "Invalid move";
+
+			if(!c->checkMove(std::get<0>(com.m_action.move), std::get<1>(com.m_action.move)))
+				throw "Invalid move";
+
+			if(m_currentmove < m_moves.size() && !m_moves.empty())
+			{
+				auto it = m_moves.cbegin();
+				std::advance(it, m_currentmove + 1);
+				m_moves.erase(it, m_moves.cend());
+			}
+
+			if(std::get<Piece>(type) == Piece::Empty)
+			{
+				m_moves.push_back(Move(com.m_action.move, std::make_pair(false, type)));
+				if(m_moves.size() != 1)
+					++m_currentmove;
+			}
+			else
+			{
+				m_moves.push_back(Move(com.m_action.move, std::make_pair(true, type)));
+				if(m_moves.size() != 1)
+					++m_currentmove;
+			}
+			c->updateBoard(std::get<0>(com.m_action.move), std::get<1>(com.m_action.move));
+			
+			this->turnSwitch();
+			m_lastClick = std::make_pair(Location(), false);
+			break;
+		}
+		case CommandType::Info:
+		{
+			auto b = m_Comps.find(ComponentType::Info);
+			if(b != m_Comps.end())
+				b->second->draw();
+			else
+				throw "Info unavailable";
+			m_lastClick = std::make_pair(Location(), false);
+			break;
+		}
+		case CommandType::StateChange:
+		{
+			this->implementStateChange(com.m_action.changeState);
+			m_lastClick = std::make_pair(Location(), false);
+			break;
+		}	
+	}
+}
+
 	
 
-}
 
 void Game::implementStateChange(const State& s)
 {
@@ -296,22 +311,19 @@ void Game::undo()
 {
 	if(m_currentmove < 0)
 		return;
-	else
-	{
-		auto b = m_Comps.find(ComponentType::Board);
-		if(b != m_Comps.end())
-		{
-			auto c = dynamic_cast<Board*>(b->second.get());
-			//auto p = std::find(m_moves.cbegin(), m_moves.cend(), m_currentmove);
 
-			//c->updateBoard(std::get<0>(m_currentmove.m_move), std::get<1>(m_currentmove.m_move));
-			c->undoMove(m_moves.at(m_currentmove), GameBuilder(this, mp_Imp), {});
-			if(m_currentmove != 0)
-				--m_currentmove;
-		}
-		else
-			throw "Board not initialised";
-	}
+	auto b = m_Comps.find(ComponentType::Board);
+
+	if(b == m_Comps.end())
+		throw "Board not initialised";
+
+	auto c = dynamic_cast<Board*>(b->second.get());
+	//auto p = std::find(m_moves.cbegin(), m_moves.cend(), m_currentmove);
+
+	//c->updateBoard(std::get<0>(m_currentmove.m_move), std::get<1>(m_currentmove.m_move));
+	c->undoMove(m_moves.at(m_currentmove), GameBuilder(this, mp_Imp), {});
+	if(m_currentmove != 0)
+		--m_currentmove;
 
 }
 
@@ -319,23 +331,17 @@ void Game::redo()
 {
 	if(m_currentmove >= m_moves.size() - 1)
 		return;
-	else
-	{
-		auto b = m_Comps.find(ComponentType::Board);
-		if(b != m_Comps.end())
-		{
-			auto c = dynamic_cast<Board*>(b->second.get());
-			//auto p = std::find(m_moves.cbegin(), m_moves.cend(), m_currentmove);
 
-			//c->updateBoard(std::get<0>(m_currentmove.m_move), std::get<1>(m_currentmove.m_move));
-			c->doMove(m_moves.at(++m_currentmove), GameBuilder(this, mp_Imp), {});
-			//++m_currentmove;
-		}
-		else
-			throw "Board not initialised";
-		
-	}
+	auto b = m_Comps.find(ComponentType::Board);
+	if(b != m_Comps.end())
+		throw "Board not initialised";
 
+	auto c = dynamic_cast<Board*>(b->second.get());
+	//auto p = std::find(m_moves.cbegin(), m_moves.cend(), m_currentmove);
+
+	//c->updateBoard(std::get<0>(m_currentmove.m_move), std::get<1>(m_currentmove.m_move));
+	c->doMove(m_moves.at(++m_currentmove), GameBuilder(this, mp_Imp), {});
+	//++m_currentmove;
 }
 
 void Game::storeMove(Move mov)
@@ -349,35 +355,33 @@ void Game::turnSwitch()
 	++m_currentmove;
 
 	auto t = m_Comps.find(ComponentType::Timer);
-	if(t != m_Comps.end())
+	if(t == m_Comps.end())
 	{
-		auto timer = dynamic_cast<Timer*>(t->second.get());
 
 		if(m_playerTurn == Colour::White)
 		{
 			m_playerTurn = Colour::Black;
-			timer->startTimer(Colour::Black);
-			timer->stopTimer(Colour::White);
 		}
 		else
 		{
 			m_playerTurn = Colour::White;
-			timer->startTimer(Colour::White);
-			timer->stopTimer(Colour::Black);
 		}
+	}
+	
 		
+	auto timer = dynamic_cast<Timer*>(t->second.get());
+
+	if(m_playerTurn == Colour::White)
+	{
+		m_playerTurn = Colour::Black;
+		timer->startTimer(Colour::Black);
+		timer->stopTimer(Colour::White);
 	}
 	else
 	{
-		if(m_playerTurn == Colour::White)
-		{
-			m_playerTurn = Colour::Black;
-		}
-		else
-		{
-			m_playerTurn = Colour::White;
-		}
-		
+		m_playerTurn = Colour::White;
+		timer->startTimer(Colour::White);
+		timer->stopTimer(Colour::Black);
 	}
 	++m_currentmove;
 
