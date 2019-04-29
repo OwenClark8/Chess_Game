@@ -23,7 +23,8 @@ public:
 
 private:
 
-	//void checkCastle(std::list<Location>& locs) const;
+	void checkCastle(std::list<Location>& locs) const;
+
 
 };
 

@@ -21,8 +21,9 @@ BUILDDIR := build
 TARGET := bin/runner
  
 SRCEXT := cpp
-SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
+SOURCES := $(shell find $(SRCDIR) -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
+BUILDSUBDIR := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(shell find $(SRCDIR) -type d))
 # Compiler flags
 CXXFLAGS := -g -std=c++14
 # -Wall
@@ -45,7 +46,9 @@ $(TARGET): $(OBJECTS)
 	@echo " $(CC) $(CXXFLAGS) -o $(TARGET) $(OBJECTS) $(LIB)"; $(CC) $(CXXFLAGS) -o $(TARGET) $(OBJECTS) $(LIB)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
+	@echo "$(BUILDSUBDIR)"
 	@mkdir -p $(BUILDDIR)
+	@mkdir -p $(BUILDSUBDIR)
 	@echo " $(CC) $(CXXFLAGS) $(INC) -c -o $@ $<"; $(CC) $(CXXFLAGS) $(INC) -c -o $@ $<
 
 

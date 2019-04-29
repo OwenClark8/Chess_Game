@@ -7,6 +7,7 @@
 void King::movePiece(Location position)
 {
 	m_position = std::move(position);
+	m_unused = false;
 }
 
 std::list<Location> King::getMovementOptions() const
@@ -106,15 +107,55 @@ std::list<Location> King::getMovementOptions() const
 		}
 	}
 
-	//this->checkCastle(locs);
+	this->checkCastle(locs);
 
 	return locs;
 }
 
-// void King::checkCastle(std::list<Location>& locs) const
-// {
+void King::checkCastle(std::list<Location>& locs) const
+{
+	if(!m_unused)
+		return;
 
-// }
+	int i = 1;
+	bool cont = true;
+	while(cont)
+	{
+		auto left = std::make_pair(std::get<Letter>(m_position) - i, std::get<Number>(m_position) );
+
+		if(!(std::get<Piece>(mp_gameboard->getPiece(left)) == Piece::Empty))
+		{
+			if(std::get<Piece>(mp_gameboard->getPiece(left)) == Piece::Rook && std::get<Letter>(left) == Letter::A)
+			{
+				locs.emplace_back(std::make_pair(std::get<Letter>(m_position) - 3, std::get<Number>(m_position)));
+			}
+			cont = false;
+		}
+		if(std::get<Letter>(left) == Letter::A)
+			cont = false;
+		++i;
+	}
+
+	i = 1;
+	cont = true;
+	while(cont)
+	{
+		auto right = std::make_pair(std::get<Letter>(m_position) + i, std::get<Number>(m_position));
+
+		if(!(std::get<Piece>(mp_gameboard->getPiece(right)) == Piece::Empty))
+		{
+			if(std::get<Piece>(mp_gameboard->getPiece(right)) == Piece::Rook && std::get<Letter>(right) == Letter::H)
+			{
+				locs.emplace_back(std::make_pair(std::get<Letter>(m_position) + 2, std::get<Number>(m_position)));
+			}
+			cont = false;
+		}
+		if(std::get<Letter>(right) == Letter::H)
+			cont = false;
+		++i;
+	}
+
+}
 
 void King::draw() const
 {

@@ -13,8 +13,6 @@ class Pawn :
 
 protected:
 
-	bool m_unused = true;
-
 	std::array<bool,2> m_empassantcheck = std::array<bool,2>{false, false}; 
 
 	std::array<std::pair<Location, bool>, 2> m_empassantlocs = 

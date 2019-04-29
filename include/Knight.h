@@ -10,7 +10,7 @@ class Knight: public AbstractPiece
 {
 public:
 	Knight(Board* b, Colour c, Location pos, PrintImpl* pi) :  AbstractPiece(b, std::make_pair(c, 
-		Piece::King), pos, pi)
+		Piece::Knight), pos, pi)
 	{};
 
 	Knight(const Knight&) = delete;

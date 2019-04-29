@@ -11,17 +11,27 @@
 
 class Board;
 
+
 class AbstractPiece: public Component
 {
 protected:
 	Location m_position;
 	PieceType m_type;
 	Board* mp_gameboard;
+	bool m_unused = true;
+	int  m_moveNo = 0;
+	bool m_default = true;
 
 public:
-	AbstractPiece(Board* b, PieceType type, Location pos, PrintImpl* pi) : Component(pi),
+	AbstractPiece(Board* b, PieceType type, Location pos, PrintImpl* pi, bool defaultGame = true) : Component(pi),
 		mp_gameboard(b), m_position(pos), m_type(type)
-	{};	
+	{
+		if(!defaultGame)
+		{
+			m_unused = false;
+			m_default = false;
+		}
+	};	
 
 	virtual ~AbstractPiece(); 
 
@@ -42,6 +52,16 @@ public:
 	Location getPosition() const; 
 
 	PieceType getPieceType() const;
+
+	void incrementMoveNo();
+
+	void decrementMoveNo();
+
+	int getMoveNo() const;
+
+	void updateMoveNo(int i);
+
+
 };
 
 #endif

@@ -11,7 +11,7 @@ class SFMLPrinter : public PrintImpl
 {
 	using clock = std::chrono::high_resolution_clock;
 public:
-	SFMLPrinter(std::unique_ptr<SFMLPrintLib::Game> game) :mp_game(std::move(game))
+	SFMLPrinter(SFMLLib::SFMLGame* game) :mp_game(std::move(game))
 	{};
 
 	~SFMLPrinter() = default;
@@ -49,9 +49,13 @@ public:
 
 protected:
 
-	std::unique_ptr<SFMLPrintLib::Game> mp_game;
+	SFMLLib::SFMLGame* mp_game;
 
-	int m_currentSquare = -1;
+	int m_currentSquarei = -1;
+	int m_currentSquarej = -1;
+
+	std::array<std::array<int, 8>, 8> m_logic;
+	std::array<std::array<bool, 8>, 8> m_selected;
 
 };
 

@@ -9,7 +9,7 @@ class Rook: public AbstractPiece
 {
 public:
 	Rook(Board* b, Colour c, Location pos, PrintImpl* pi) :  AbstractPiece(b, std::make_pair(c, 
-		Piece::King), pos, pi)
+		Piece::Rook), pos, pi)
 	{};
 
 	Rook(const Rook&) = delete;

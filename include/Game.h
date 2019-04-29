@@ -23,7 +23,7 @@ union Action{
 
 struct Command{
 	CommandType m_comType;
-	Action        m_action;
+	Action      m_action;
 };
 
 class Game : public Component
@@ -40,7 +40,7 @@ protected:
 
 	bool m_tick = true;
 
-	std::pair<Location, bool> m_lastClick = std::make_pair(Location , false); 
+	std::pair<Location, bool> m_lastClick = std::make_pair(Location(), false); 
 
 public:
 	Game(PrintImpl* pi) : Component(pi) {};
@@ -75,7 +75,7 @@ private:
 
 	void implementStateChange(const State& s);
 	void resign(){};
-	void restart(){};
+	void restart();
 	void undo();
 	void redo();
 };

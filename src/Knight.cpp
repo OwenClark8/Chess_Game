@@ -24,7 +24,7 @@ std::list<Location> Knight::getMovementOptions() const
 
 void Knight::checkU(std::list<Location>& locs) const
 {	
-	if(std::get<Number>(m_position) != Number::Seven || std::get<Number>(m_position) != Number::Eight)
+	if(std::get<Number>(m_position) != Number::Seven && std::get<Number>(m_position) != Number::Eight)
 	{
 		if(std::get<Letter>(m_position) != Letter::A)
 		{
@@ -55,7 +55,7 @@ void Knight::checkU(std::list<Location>& locs) const
 
 void Knight::checkD(std::list<Location>& locs) const
 {
-	if(std::get<Number>(m_position) != Number::One || std::get<Number>(m_position) != Number::Two)
+	if(std::get<Number>(m_position) != Number::One && std::get<Number>(m_position) != Number::Two)
 	{
 		if(std::get<Letter>(m_position) != Letter::A)
 		{

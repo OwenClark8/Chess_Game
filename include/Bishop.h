@@ -9,7 +9,7 @@ class Bishop: public AbstractPiece
 {
 public:
 	Bishop(Board* b, Colour c, Location pos, PrintImpl* pi) :  AbstractPiece(b, std::make_pair(c, 
-		Piece::King), pos, pi)
+		Piece::Bishop), pos, pi)
 	{};
 
 	Bishop(const Bishop&) = delete;

@@ -204,7 +204,7 @@ void Game::draw() const
 		comp.second->draw();
 	}
 
-	mp_Imp->display(true);
+	mp_Imp->display(m_tick);
 }
 
 void Game::implementCommand(const Command& com)
@@ -222,26 +222,29 @@ void Game::implementCommand(const Command& com)
 		{	
 			if(!std::get<bool>(m_lastClick))
 			{
-				c->selectSquare(com.m_action.select);
-				m_lastClick = std::make_pair(com.m_action.select, true);
+				if(c->selectSquare(com.m_action.select, m_playerTurn))
+					m_lastClick = std::make_pair(com.m_action.select, true);
+				break;
 			}
-			if(!c->checkMove(std::get<Location>(m_lastClick), com.m_action.select))
+			else if(!c->checkMove(std::get<Location>(m_lastClick), com.m_action.select))
 			{
 				m_lastClick = std::make_pair(Location(), false);
 				this->implementCommand(com);
+				break;
 			}
 			auto newCommand = std::make_unique<Command>(Command{});
 			newCommand->m_action.move = std::make_pair(std::get<Location>(m_lastClick), com.m_action.select);
 			newCommand->m_comType     = CommandType::Movement;
-			this->implementCommand(newCommand.get());
+			this->implementCommand(*newCommand.get());
 			break;
 		}
 			
 		case CommandType::Movement:
 		{
+			auto oritype = c->getPiece(std::get<0>(com.m_action.move));
 			auto type = c->getPiece(std::get<1>(com.m_action.move));
 			
-			if(m_playerTurn != std::get<Colour>(c->getPiece(std::get<0>(com.m_action.move))))
+			if(m_playerTurn != std::get<Colour>(oritype))
 				throw "Invalid move";
 
 			if(!c->checkMove(std::get<0>(com.m_action.move), std::get<1>(com.m_action.move)))
@@ -250,23 +253,66 @@ void Game::implementCommand(const Command& com)
 			if(m_currentmove < m_moves.size() && !m_moves.empty())
 			{
 				auto it = m_moves.cbegin();
-				std::advance(it, m_currentmove + 1);
+				std::advance(it, m_currentmove);
 				m_moves.erase(it, m_moves.cend());
 			}
 
+	
+
 			if(std::get<Piece>(type) == Piece::Empty)
 			{
-				m_moves.push_back(Move(com.m_action.move, std::make_pair(false, type)));
-				if(m_moves.size() != 1)
-					++m_currentmove;
+				auto mov = Move(com.m_action.move, std::make_pair(false, type));
+				c->doMove(mov, {});
+				m_moves.push_back(mov);
+				
+				// if(m_moves.size() != 1)
+				// 	++m_currentmove;
 			}
 			else
 			{
-				m_moves.push_back(Move(com.m_action.move, std::make_pair(true, type)));
-				if(m_moves.size() != 1)
-					++m_currentmove;
+				auto mov = Move(com.m_action.move, std::make_pair(true, type));
+				c->doMove(mov, {});
+				m_moves.push_back(mov);
+				
+				// if(m_moves.size() != 1)
+				// 	++m_currentmove;
 			}
-			c->updateBoard(std::get<0>(com.m_action.move), std::get<1>(com.m_action.move));
+			//Handle castling 
+			if(std::get<Piece>(oritype) == Piece::King && std::get<Letter>(std::get<0>(com.m_action.move)) == Letter::E)
+			{
+				if(std::get<Letter>(std::get<1>(com.m_action.move)) == Letter::B)
+				{
+					auto num = (m_playerTurn == Colour::White) ? Number::One : Number::Eight;
+					auto rookfrom = std::make_pair(Letter::A, num);
+					auto rookto   = std::make_pair(Letter::C, num);
+					//c->updateBoard(rookfrom, rookto);
+					
+					auto mov = Move(std::make_pair(rookfrom, rookto), std::make_pair(false, type));
+					mov.m_castle = true;
+					c->doMove(mov, {});
+					m_moves[m_moves.size() -1].m_castle = true;
+					m_moves.push_back(mov);
+					++m_currentmove;
+
+				}
+
+				if(std::get<Letter>(std::get<1>(com.m_action.move)) == Letter::G)
+				{
+					auto num = (m_playerTurn == Colour::White) ? Number::One : Number::Eight;
+					auto rookfrom = std::make_pair(Letter::H, num);
+					auto rookto   = std::make_pair(Letter::F, num);
+					//c->updateBoard(rookfrom, rookto);
+
+					auto mov = Move(std::make_pair(rookfrom, rookto), std::make_pair(false, type));
+					mov.m_castle = true;
+					m_moves[m_moves.size() -1].m_castle = true;
+					c->doMove(mov, {});
+					m_moves.push_back(mov);
+					++m_currentmove;
+				}
+			}
+			//c->updateBoard(std::get<0>(com.m_action.move), std::get<1>(com.m_action.move));
+
 			
 			this->turnSwitch();
 			m_lastClick = std::make_pair(Location(), false);
@@ -304,12 +350,16 @@ void Game::implementStateChange(const State& s)
 	{
 		this->redo();
 	}
+	else if(s == State::Restart)
+	{
+		this->restart();
+	}
 
 }
 
 void Game::undo()
 {
-	if(m_currentmove < 0)
+	if(m_currentmove <=  0)
 		return;
 
 	auto b = m_Comps.find(ComponentType::Board);
@@ -321,27 +371,56 @@ void Game::undo()
 	//auto p = std::find(m_moves.cbegin(), m_moves.cend(), m_currentmove);
 
 	//c->updateBoard(std::get<0>(m_currentmove.m_move), std::get<1>(m_currentmove.m_move));
-	c->undoMove(m_moves.at(m_currentmove), GameBuilder(this, mp_Imp), {});
+	c->undoMove(m_moves.at(--m_currentmove), GameBuilder(this, mp_Imp), {});
+	
 	if(m_currentmove != 0)
-		--m_currentmove;
+	{
+		if(m_moves.at(m_currentmove -1 ).m_castle)
+		{
+			//--m_currentmove;
+			this->undo();
+		}
+	}
+	if(m_playerTurn == Colour::White)
+	{
+		m_playerTurn = Colour::Black;
+	}
+	else
+	{
+		m_playerTurn = Colour::White;
+	}
 
 }
 
 void Game::redo()
 {
-	if(m_currentmove >= m_moves.size() - 1)
+	if(m_currentmove >= m_moves.size())
 		return;
 
 	auto b = m_Comps.find(ComponentType::Board);
-	if(b != m_Comps.end())
+	if(b == m_Comps.end())
 		throw "Board not initialised";
 
 	auto c = dynamic_cast<Board*>(b->second.get());
 	//auto p = std::find(m_moves.cbegin(), m_moves.cend(), m_currentmove);
 
 	//c->updateBoard(std::get<0>(m_currentmove.m_move), std::get<1>(m_currentmove.m_move));
-	c->doMove(m_moves.at(++m_currentmove), GameBuilder(this, mp_Imp), {});
-	//++m_currentmove;
+	c->doMove(m_moves.at(m_currentmove), {});
+
+	if(m_moves.at(m_currentmove + 1).m_castle)
+	{
+		++m_currentmove;
+		this->redo();
+	}
+	++m_currentmove;
+	if(m_playerTurn == Colour::White)
+	{
+		m_playerTurn = Colour::Black;
+	}
+	else
+	{
+		m_playerTurn = Colour::White;
+	}
 }
 
 void Game::storeMove(Move mov)
@@ -383,7 +462,27 @@ void Game::turnSwitch()
 		timer->startTimer(Colour::White);
 		timer->stopTimer(Colour::Black);
 	}
-	++m_currentmove;
+	//++m_currentmove;
+
+}
+
+void Game::restart()
+{
+	m_Comps.clear();
+
+	m_moves = {};
+
+	m_currentmove = 0;
+
+	m_playerTurn = Colour::White;
+
+	m_tick = true;
+
+	m_lastClick = std::make_pair(Location(), false); 
+
+	GameBuilder builder(this, mp_Imp);
+
+	this->createNewGame(builder);
 
 }
 
@@ -439,10 +538,6 @@ Location strToLoc(const std::string& str)
 
 	return std::make_pair(l, n);
 }
-
-
-
-
 
 std::unique_ptr<Command> makeCommand(const std::string& s)
 {

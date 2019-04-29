@@ -6,11 +6,6 @@
 #include "../include/LossBoard.h"
 
 
-// Board::Board(const Board& otherboard)
-// {
-// 	m_board = otherboard.m_board;
-// }
-
 PieceType Board::getPiece(const Location& i) const
 {
 	auto square = m_board.find(i);
@@ -22,7 +17,7 @@ PieceType Board::getPiece(const Location& i) const
 	}
 }
 
-void Board::selectSquare(const Location& i)
+bool Board::selectSquare(const Location& i, const Colour& c)
 {
 	auto square = m_board.find(i);
 	if(square == m_board.end())
@@ -31,18 +26,25 @@ void Board::selectSquare(const Location& i)
 	{
 		if(square->second->isAllocated())
 		{
-			auto options = square->second->clicked();
-			square->second->select();
-
-			for(auto& o : options)
+			if(std::get<Colour>(square->second->getPieceHandle()->getPieceType()) == c)
 			{
-				auto squareopt = m_board.find(o);
-				if(squareopt == m_board.end())
-					throw "invalid location";
-				else
-					squareopt->second->select();
+				auto options = square->second->clicked();
+				
+				for(auto& o : options)
+				{
+					auto squareopt = m_board.find(o);
+					if(squareopt == m_board.end())
+						throw "invalid location";
+					else
+						squareopt->second->select();
+				}
+				square->second->select();
+				return true;
 			}
 		}
+
+		square->second->select();
+		return false;
 	}
 
 }
@@ -128,7 +130,7 @@ void Board::updateBoard(const Location& movefrom, const Location& moveto)
 
 }
 
-void Board::doMove(const Move& mov, const GameBuilder& b, Key<Game>)
+void Board::doMove(Move& mov,  Key<Game>)
 {
 	auto squarefromit = m_board.find(std::get<0>(mov.m_move));
 	auto squaretoit   = m_board.find(std::get<1>(mov.m_move));
@@ -147,6 +149,7 @@ void Board::doMove(const Move& mov, const GameBuilder& b, Key<Game>)
 
 		if(squarefrom->isAllocated())
 		{
+			mov.m_moveNo = squarefrom->getPieceHandle()->getMoveNo();
 			if(squareto->isAllocated())
 				mp_lossBoard->logPiece(squareto->getPieceType());
 
@@ -176,13 +179,17 @@ void Board::undoMove(const Move& mov, const GameBuilder& b, Key<Game>)
 		auto squareto   = squaretoit->second.get();
 
 		if(squareto->isAllocated())
+		{
 			squarefrom->movePieceIn(squareto->movePieceOut());
+			squarefrom->getPieceHandle()->updateMoveNo(mov.m_moveNo);
+		}
 		else 
 			throw "invlaid move";
 
 		if(std::get<bool>(mov.m_lostPiece))
 		{
 			auto p = b.buildPiece(this, std::get<PieceType>(mov.m_lostPiece), std::get<1>(mov.m_move));
+			p->updateMoveNo(mov.m_moveNo - 1);
 			squareto->movePieceIn(std::move(p));
 			mp_lossBoard->unlogPiece(std::get<PieceType>(mov.m_lostPiece));
 		}

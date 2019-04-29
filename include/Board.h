@@ -19,6 +19,8 @@ struct Move{
 	Move(void) = default;
 	std::pair<Location, Location> m_move;
 	std::pair<bool, PieceType>    m_lostPiece;
+	bool 						  m_castle= false;
+	int 						  m_moveNo = 0;
 };
 
 
@@ -44,7 +46,7 @@ public:
 	
 	PieceType getPiece(const Location& i) const;
 
-	void selectSquare(const Location& i);
+	bool selectSquare(const Location& i, const Colour& c);
 
 	bool checkMove(const Location& movefrom, const Location& moveto) const;
 
@@ -52,7 +54,7 @@ public:
 
 	void updateBoard(const Location& movefrom, const Location& moveto);
 
-	void doMove(const Move& mov, const GameBuilder& b, Key<Game>);
+	void doMove(Move& mov, Key<Game>);
 
 	void undoMove(const Move& mov, const GameBuilder& b, Key<Game>);
 

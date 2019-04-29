@@ -12,6 +12,7 @@ void Square::movePieceIn(std::unique_ptr<AbstractPiece> P)
 {
 	mp_piece.reset(P.release());
 	m_allocated = true;
+	mp_piece->incrementMoveNo();
 	mp_piece->movePiece(m_position);
 }
 
@@ -26,7 +27,7 @@ PieceType Square::getPieceType() const
 	if(!m_allocated)
 		return std::make_pair(Colour::White, Piece::Empty);
 
-	return std::move(mp_piece->getPieceType());
+	return mp_piece->getPieceType();
 }
 
 std::unique_ptr<AbstractPiece> Square::movePieceOut()

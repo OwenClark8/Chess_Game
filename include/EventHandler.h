@@ -14,9 +14,9 @@ public:
 
 	virtual void checkForEvents() = 0;
 
-	virtual bool continue() const = 0;
+	virtual bool checkContinue() const = 0;
 
-private:
+protected:
 	Game* mp_game;
 
 };

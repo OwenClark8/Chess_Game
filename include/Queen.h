@@ -9,7 +9,7 @@ class Queen: public AbstractPiece
 {
 public:
 	Queen(Board* b, Colour c, Location pos, PrintImpl* pi) :  AbstractPiece(b, std::make_pair(c, 
-		Piece::King), pos, pi)
+		Piece::Queen), pos, pi)
 	{};
 
 	Queen(const Queen&) = delete;
