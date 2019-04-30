@@ -4,6 +4,7 @@
 #include "../include/Game.h"
 #include "../include/GameBuilder.h"
 #include "../include/LossBoard.h"
+#include "../include/Pawn.h"
 
 
 PieceType Board::getPiece(const Location& i) const
@@ -221,9 +222,9 @@ void Board::pawnAttach(const Location& loc1, const Location& loc2)
 	}
 	else
 	{
-		auto square1 = square1it->second.get();
-		auto square2 = square2it->second.get();
-		//this->registerObsv(square1->getPieceHandle(), square2->getPieceHandle());
+		auto pawn1 = dynamic_cast<Pawn*>(square1it->second.get()->getPieceHandle());
+		auto pawn2 = dynamic_cast<Pawn*>(square2it->second.get()->getPieceHandle());
+		this->registerObsv(dynamic_cast<Subject<Location>*>(pawn1), dynamic_cast<Observer<Location>*>(pawn2));
 	}
 
 }
@@ -242,9 +243,9 @@ void Board::pawnDetach(const Location& loc1, const Location& loc2)
 	}
 	else
 	{
-		auto square1 = square1it->second.get();
-		auto square2 = square2it->second.get();
-		//this->unregisterObsv(square1->getPieceHandle(), square2->getPieceHandle());
+		auto pawn1 = dynamic_cast<Pawn*>(square1it->second.get()->getPieceHandle());
+		auto pawn2 = dynamic_cast<Pawn*>(square2it->second.get()->getPieceHandle());
+		this->unregisterObsv(dynamic_cast<Subject<Location>*>(pawn1), dynamic_cast<Observer<Location>*>(pawn2));
 	}
 
 }
@@ -259,6 +260,26 @@ void Board::draw() const
 	}
 	
 	mp_Imp->endBoard();
+}
+
+void Board::empassantRemove(const Location& loc, Key<Pawn>)
+{
+	auto squareit = m_board.find(loc);
+
+	if(squareit == m_board.end())
+	{
+		throw "invalid location 1";
+	}
+	else
+	{
+		auto square = squareit->second.get();	
+		if(square->isAllocated())
+		{
+			mp_lossBoard->logPiece(square->getPieceType());
+			square->movePieceOut();
+		}
+	}
+
 }
 
 

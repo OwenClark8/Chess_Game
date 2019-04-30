@@ -111,12 +111,18 @@ void Pawn::checkEnPassant(std::list<Location>& l) const
 {
 	if(m_empassantcheck[0])
 	{
-		l.emplace_back(std::get<Location>(m_empassantlocs[0]));
+		auto loc = std::get<Location>(m_empassantlocs[0]);
+		int i = (std::get<Colour>(m_type) == Colour::White) ? 1 : -1;
+		loc = std::make_pair(std::get<Letter>(loc), std::get<Number>(loc) + i);
+		l.emplace_back(loc);
 	}
 
 	if(m_empassantcheck[1])
 	{
-		l.emplace_back(std::get<Location>(m_empassantlocs[1]));
+		auto loc = std::get<Location>(m_empassantlocs[1]);
+		int i = (std::get<Colour>(m_type) == Colour::White) ? 1 : -1;
+		loc = std::make_pair(std::get<Letter>(loc), std::get<Number>(loc) + i);
+		l.emplace_back(loc);
 	}
 }
 
@@ -146,16 +152,16 @@ void Pawn::movePiece(Location position)
 
 		if(std::get<Piece>(left) == Piece::Pawn && std::get<Colour>(left) == Colour::Black)
 		{
-			mp_gameboard->pawnAttach(position, leftpos);
+			mp_gameboard->pawnAttach(leftpos, position);
 			m_empassantlocs.at(0) = {leftpos, true};
 		}
 
 		auto rightpos = std::make_pair(std::get<Letter>(position) + 1, Number::Seven);
 		auto right    = mp_gameboard->getPiece(rightpos);
 
-		if(std::get<Piece>(right) == Piece::Pawn && std::get<Colour>(left) == Colour::Black)
+		if(std::get<Piece>(right) == Piece::Pawn && std::get<Colour>(right) == Colour::Black)
 		{
-			mp_gameboard->pawnAttach(position, leftpos);
+			mp_gameboard->pawnAttach(rightpos, position);
 			m_empassantlocs.at(1) = std::pair<Location, bool>{rightpos, true};
 		}
 	}
@@ -166,30 +172,43 @@ void Pawn::movePiece(Location position)
 
 		if(std::get<Piece>(left) == Piece::Pawn && std::get<Colour>(left) == Colour::White)
 		{
-			mp_gameboard->pawnAttach(position, leftpos);
+			mp_gameboard->pawnAttach(leftpos, position);
 			m_empassantlocs.at(0) = std::pair<Location, bool>{leftpos, true};
 		}
 
 		auto rightpos = std::make_pair(std::get<Letter>(position) + 1, Number::Two);
 		auto right    = mp_gameboard->getPiece(rightpos);
 
-		if(std::get<Piece>(right) == Piece::Pawn && std::get<Colour>(left) == Colour::White)
+		if(std::get<Piece>(right) == Piece::Pawn && std::get<Colour>(right) == Colour::White)
 		{
-			mp_gameboard->pawnAttach(position, leftpos);
+			mp_gameboard->pawnAttach(rightpos, position);
 			m_empassantlocs.at(1) = std::pair<Location, bool>{rightpos, true};
 		}
 	}
 	else
 	{
+		if(m_empassantcheck[0])
+		{
+			auto loc = std::get<Location>(m_empassantlocs[0]);
+
+			mp_gameboard->empassantRemove(loc, {});
+
+		}
+		if(m_empassantcheck[1])
+		{
+			auto loc = std::get<Location>(m_empassantlocs[1]);
+
+			mp_gameboard->empassantRemove(loc, {});
+		}
 		if(std::get<bool>(m_empassantlocs[0]))
 		{
-			mp_gameboard->pawnDetach(position, std::get<Location>(m_empassantlocs[0]));
+			mp_gameboard->pawnDetach(std::get<Location>(m_empassantlocs[0]), position);
 			std::get<bool>(m_empassantlocs[0]) = false;
 		}
 
 		if(std::get<bool>(m_empassantlocs[1]))
 		{
-			mp_gameboard->pawnDetach(position, std::get<Location>(m_empassantlocs[1]));
+			mp_gameboard->pawnDetach(std::get<Location>(m_empassantlocs[1]), position);
 			std::get<bool>(m_empassantlocs[1]) = false;
 		}
 	}
@@ -224,13 +243,13 @@ void Pawn::notify() const
 
 void Pawn::update(const Location& L)
 {
-	if(static_cast<int>(std::get<Number>(m_position)) - static_cast<int>(std::get<Number>(L)) == -1)
+	if(static_cast<int>(std::get<Letter>(m_position)) - static_cast<int>(std::get<Letter>(L)) == -1)
 	{
 		std::get<Location>(m_empassantlocs[0]) = L;
 		m_empassantcheck[0] = true;
 
 	}
-	else if(static_cast<int>(std::get<Number>(m_position)) - static_cast<int>(std::get<Number>(L)) == 1)
+	else if(static_cast<int>(std::get<Letter>(m_position)) - static_cast<int>(std::get<Letter>(L)) == 1)
 	{
 		std::get<Location>(m_empassantlocs[1]) = L;
 		m_empassantcheck[1] = true;

@@ -10,6 +10,7 @@
 class GameBuilder;
 class Game;
 class LossBoard;
+class Pawn;
 
 /* Needs to be able to restore enpassant links */
 struct Move{
@@ -66,6 +67,8 @@ public:
 	void pawnAttach(const Location& loc1, const Location& loc2);
 
 	void pawnDetach(const Location& loc1, const Location& loc2);
+
+	void empassantRemove(const Location& loc, Key<Pawn>);
 
 	//void checkCastle(Colour c) const;
 

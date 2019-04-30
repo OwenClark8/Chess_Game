@@ -12,6 +12,10 @@ Letter& operator++(Letter& l)
 Letter operator+(const Letter& l, int i)
 {
 	Letter g = l;
+	if(i < 0)
+	{
+		g = g - abs(i);
+	}
 	for(int j = 0 ; j < i; ++j)
 	{
 		++g;
@@ -47,7 +51,11 @@ Number& operator++(Number& l)
 
 Number operator+(const Number& l, int i)
 {
-		Number g = l;
+	Number g = l;
+	if(i < 0)
+	{
+		g = g - abs(i);
+	}
 	for(int j = 0 ; j < i; ++j)
 	{
 		++g;
