@@ -10,8 +10,21 @@ void King::movePiece(Location position)
 	m_unused = false;
 }
 
+void King::computeMove()
+{
+	m_computeMove = true;
+}
+
+void King::getTrimmedMovements(const std::list<Location>& locs, Key<Board>)
+{
+	m_movements   = locs;
+	m_computeMove = false;
+}
+
 std::list<Location> King::getMovementOptions() const
 {
+	if(!m_computeMove)
+		return m_movements;
 
 	std::list<Location> locs;
 

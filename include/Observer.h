@@ -4,9 +4,6 @@
 template <typename T>
 class Observer
 {
-protected:
-	// std::set<Observer*> m_obeservers = {};
-
 public:
 
 	Observer(void) = default;
@@ -21,12 +18,6 @@ public:
 
 	
 	virtual void update(const T& s) = 0;
-
-	// void attachObserver(Observer* o);
-
-	// void detatchObserver(Observer* o);
-
-	// void notify() const = 0;
 
 };
 

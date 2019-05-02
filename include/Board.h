@@ -14,14 +14,15 @@ class Pawn;
 
 /* Needs to be able to restore enpassant links */
 struct Move{
-	Move(const std::pair<Location, Location>& m, const std::pair<bool, PieceType>& lp):
+	Move(const std::pair<Location, Location>& m, const std::tuple<bool, PieceType, int>& lp):
 		m_move(m), m_lostPiece(lp)
 	{};
 	Move(void) = default;
 	std::pair<Location, Location> m_move;
-	std::pair<bool, PieceType>    m_lostPiece;
+	std::tuple<bool, PieceType, int>    m_lostPiece;
 	bool 						  m_castle= false;
 	int 						  m_moveNo = 0;
+	bool 						  m_enpassant = false;
 };
 
 
@@ -69,6 +70,9 @@ public:
 	void pawnDetach(const Location& loc1, const Location& loc2);
 
 	void empassantRemove(const Location& loc, Key<Pawn>);
+
+	bool inCheck(Colour c) const;
+
 
 	//void checkCastle(Colour c) const;
 

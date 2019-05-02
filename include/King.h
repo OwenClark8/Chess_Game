@@ -2,6 +2,7 @@
 #define KINGDEF
 
 #include "AbstractPiece.h"
+#include "Key.h"
 
 
 class King :
@@ -21,9 +22,16 @@ public:
 
 	void draw() const override;
 
+	void getTrimmedMovements(const std::list<Location>& locs, Key<Board>);
+
+	void computeMove();
 private:
 
 	void checkCastle(std::list<Location>& locs) const;
+
+	bool m_computeMove = true;
+
+	std::list<Location> m_movements;
 
 
 };

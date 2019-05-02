@@ -5,6 +5,8 @@
 #include "../include/GameBuilder.h"
 #include "../include/LossBoard.h"
 #include "../include/Pawn.h"
+#include "../include/King.h"
+#include <algorithm>
 
 
 PieceType Board::getPiece(const Location& i) const
@@ -83,6 +85,70 @@ bool Board::checkMove(const Location& movefrom, const Location& moveto) const
 	return false;
 }
 
+bool Board::inCheck(Colour c) const
+{
+	std::list<Location> locs;
+
+	std::list<Location> kinglocs;
+
+	King* pKing;
+
+	Location king;
+
+	for(auto it = m_board.begin() ; it !=m_board.end(); ++it)
+	{
+		auto square = it->second.get();
+		if(!square->isAllocated())
+		{
+			continue;
+		}
+
+		auto piece = square->getPieceHandle();
+
+		auto type = piece->getPieceType();
+
+		if(c == std::get<Colour>(type))
+		{
+			locs.merge(piece->getMovementOptions());
+		}
+		else
+		{
+			if(std::get<Piece>(type) == Piece::King)
+			{
+				pKing = dynamic_cast<King*>(piece);
+				pKing->computeMove();
+				king = pKing->getPosition();
+				kinglocs = pKing->getMovementOptions();
+				continue;
+			}
+		}
+	}
+
+	std::remove_if(kinglocs.begin(), kinglocs.end(), [&](const Location& l){
+		return (std::find(locs.begin(), locs.end(), l) != locs.end());
+	});
+
+	pKing->getTrimmedMovements(kinglocs, {});
+
+	auto out = false;
+
+	auto w = std::find(locs.begin(), locs.end(), king);
+	if(w != locs.end())
+	{
+		out = true;
+	}
+
+	if(kinglocs.empty() && out)
+		mp_game->checkMate(c);
+
+	return out;
+}
+
+
+
+
+
+
 void Board::unselectAll()
 {
 	for(auto& it: m_board)
@@ -152,7 +218,10 @@ void Board::doMove(Move& mov,  Key<Game>)
 		{
 			mov.m_moveNo = squarefrom->getPieceHandle()->getMoveNo();
 			if(squareto->isAllocated())
+			{
 				mp_lossBoard->logPiece(squareto->getPieceType());
+				std::get<int>(mov.m_lostPiece) = squareto->getPieceHandle()->getMoveNo();
+			}
 
 			squareto->movePieceIn(squarefrom->movePieceOut());
 		}
@@ -189,10 +258,39 @@ void Board::undoMove(const Move& mov, const GameBuilder& b, Key<Game>)
 
 		if(std::get<bool>(mov.m_lostPiece))
 		{
-			auto p = b.buildPiece(this, std::get<PieceType>(mov.m_lostPiece), std::get<1>(mov.m_move));
-			p->updateMoveNo(mov.m_moveNo - 1);
-			squareto->movePieceIn(std::move(p));
-			mp_lossBoard->unlogPiece(std::get<PieceType>(mov.m_lostPiece));
+			if(mov.m_enpassant)
+			{
+				auto m = std::get<1>(mov.m_move);
+				(std::get<Colour>(std::get<PieceType>(mov.m_lostPiece)) == Colour::White) ? ++std::get<Number>(m) : --std::get<Number>(m);
+				auto p = b.buildPiece(this, std::get<PieceType>(mov.m_lostPiece), m);
+				p->updateMoveNo(std::get<int>(mov.m_lostPiece));
+
+				auto squareempassit = m_board.find(m);
+				if(squareempassit == m_board.end())
+				{
+					throw "Invalid Emapsant square";
+				}
+
+				auto squareempass = squareempassit->second.get();
+
+				//std::get<Number>(m) = (std::get<Colour>(std::get<PieceType>(mov.m_lostPiece)) == Colour::White) ?
+				//						 std::get<Number>(m) - 2 : std::get<Number>(m) + 2;
+				auto pawn = dynamic_cast<Pawn*>(squarefrom->getPieceHandle());
+				pawn->undoEmpassant(m);
+
+				squareempass->movePieceIn(std::move(p));
+				mp_lossBoard->unlogPiece(std::get<PieceType>(mov.m_lostPiece));
+
+
+			}
+			else
+			{
+
+				auto p = b.buildPiece(this, std::get<PieceType>(mov.m_lostPiece), std::get<1>(mov.m_move));
+				p->updateMoveNo(mov.m_moveNo - 1);
+				squareto->movePieceIn(std::move(p));
+				mp_lossBoard->unlogPiece(std::get<PieceType>(mov.m_lostPiece));
+			}
 		}
 	}
 	
@@ -276,7 +374,9 @@ void Board::empassantRemove(const Location& loc, Key<Pawn>)
 		if(square->isAllocated())
 		{
 			mp_lossBoard->logPiece(square->getPieceType());
+			mp_game->logEnpassant(square->getPieceHandle()->getMoveNo(), {});
 			square->movePieceOut();
+			
 		}
 	}
 

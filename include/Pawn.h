@@ -38,6 +38,8 @@ public:
 
 	void update(const Location& L) override;
 
+	void undoEmpassant(const Location& L);
+
 private:
 
 	void check2Ahead(std::list<Location>& l) const;

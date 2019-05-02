@@ -22,7 +22,7 @@ PieceType AbstractPiece::getPieceType() const
 
 void AbstractPiece::incrementMoveNo()
 {
-	--m_moveNo;
+	++m_moveNo;
 }
 
 void AbstractPiece::decrementMoveNo()

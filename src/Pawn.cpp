@@ -187,6 +187,18 @@ void Pawn::movePiece(Location position)
 	}
 	else
 	{
+		if(std::get<bool>(m_empassantlocs[0]))
+		{
+			mp_gameboard->pawnDetach(std::get<Location>(m_empassantlocs[0]), position);
+			std::get<bool>(m_empassantlocs[0]) = false;
+		}
+
+		if(std::get<bool>(m_empassantlocs[1]))
+		{
+			mp_gameboard->pawnDetach(std::get<Location>(m_empassantlocs[1]), position);
+			std::get<bool>(m_empassantlocs[1]) = false;
+		}
+
 		if(m_empassantcheck[0])
 		{
 			auto loc = std::get<Location>(m_empassantlocs[0]);
@@ -199,17 +211,6 @@ void Pawn::movePiece(Location position)
 			auto loc = std::get<Location>(m_empassantlocs[1]);
 
 			mp_gameboard->empassantRemove(loc, {});
-		}
-		if(std::get<bool>(m_empassantlocs[0]))
-		{
-			mp_gameboard->pawnDetach(std::get<Location>(m_empassantlocs[0]), position);
-			std::get<bool>(m_empassantlocs[0]) = false;
-		}
-
-		if(std::get<bool>(m_empassantlocs[1]))
-		{
-			mp_gameboard->pawnDetach(std::get<Location>(m_empassantlocs[1]), position);
-			std::get<bool>(m_empassantlocs[1]) = false;
 		}
 	}
 
@@ -245,14 +246,14 @@ void Pawn::update(const Location& L)
 {
 	if(static_cast<int>(std::get<Letter>(m_position)) - static_cast<int>(std::get<Letter>(L)) == -1)
 	{
-		std::get<Location>(m_empassantlocs[0]) = L;
-		m_empassantcheck[0] = true;
+		std::get<Location>(m_empassantlocs[1]) = L;
+		m_empassantcheck[1] = true;
 
 	}
 	else if(static_cast<int>(std::get<Letter>(m_position)) - static_cast<int>(std::get<Letter>(L)) == 1)
 	{
-		std::get<Location>(m_empassantlocs[1]) = L;
-		m_empassantcheck[1] = true;
+		std::get<Location>(m_empassantlocs[0]) = L;
+		m_empassantcheck[0] = true;
 	}
 }
 
@@ -261,8 +262,20 @@ void Pawn::draw() const
 	mp_Imp->drawPawn(std::get<Colour>(m_type));
 }
 
-// std::unique_ptr<AbstractPiece> Pawn::clone()
-// {
-// 	return std::unique_ptr<AbstractPiece>(this);
-// }
+void Pawn::undoEmpassant(const Location& L)
+{
+	if(static_cast<int>(std::get<Letter>(m_position)) - static_cast<int>(std::get<Letter>(L)) == -1)
+	{
+		m_empassantlocs[0] = {L , true};
+		m_empassantcheck[0] = true;
+
+	}
+	else if(static_cast<int>(std::get<Letter>(m_position)) - static_cast<int>(std::get<Letter>(L)) == 1)
+	{
+		m_empassantlocs[1] = {L , true};
+		m_empassantcheck[1] = true;
+	}
+}
+
+
 

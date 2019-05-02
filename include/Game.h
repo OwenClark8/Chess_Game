@@ -64,6 +64,10 @@ public:
 		m_tick = !m_tick;
 	};
 
+	void logEnpassant(int moveNo, Key<Board>);
+
+	void checkMate(Colour c);
+
 
 
 

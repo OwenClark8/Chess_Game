@@ -261,19 +261,21 @@ void Game::implementCommand(const Command& com)
 
 			if(std::get<Piece>(type) == Piece::Empty)
 			{
-				auto mov = Move(com.m_action.move, std::make_pair(false, type));
+				auto mov = Move(com.m_action.move, std::make_tuple(false, type, 0));
+				m_moves.push_back(Move());
 				c->doMove(mov, {});
-				m_moves.push_back(mov);
+				m_moves[m_moves.size() - 1].m_move = mov.m_move;
+				m_moves[m_moves.size() - 1].m_castle = mov.m_castle;
+				m_moves[m_moves.size() - 1].m_moveNo = mov.m_moveNo;
 				
 				// if(m_moves.size() != 1)
 				// 	++m_currentmove;
 			}
 			else
 			{
-				auto mov = Move(com.m_action.move, std::make_pair(true, type));
+				auto mov = Move(com.m_action.move, std::make_tuple(true, type, 0));
 				c->doMove(mov, {});
 				m_moves.push_back(mov);
-				
 				// if(m_moves.size() != 1)
 				// 	++m_currentmove;
 			}
@@ -287,7 +289,7 @@ void Game::implementCommand(const Command& com)
 					auto rookto   = std::make_pair(Letter::C, num);
 					//c->updateBoard(rookfrom, rookto);
 					
-					auto mov = Move(std::make_pair(rookfrom, rookto), std::make_pair(false, type));
+					auto mov = Move(std::make_pair(rookfrom, rookto), std::make_tuple(false, type, 0));
 					mov.m_castle = true;
 					c->doMove(mov, {});
 					m_moves[m_moves.size() -1].m_castle = true;
@@ -303,7 +305,7 @@ void Game::implementCommand(const Command& com)
 					auto rookto   = std::make_pair(Letter::F, num);
 					//c->updateBoard(rookfrom, rookto);
 
-					auto mov = Move(std::make_pair(rookfrom, rookto), std::make_pair(false, type));
+					auto mov = Move(std::make_pair(rookfrom, rookto), std::make_tuple(false, type, 0));
 					mov.m_castle = true;
 					m_moves[m_moves.size() -1].m_castle = true;
 					c->doMove(mov, {});
@@ -381,6 +383,7 @@ void Game::undo()
 			this->undo();
 		}
 	}
+
 	if(m_playerTurn == Colour::White)
 	{
 		m_playerTurn = Colour::Black;
@@ -446,8 +449,21 @@ void Game::turnSwitch()
 			m_playerTurn = Colour::White;
 		}
 	}
+
+	auto b = m_Comps.find(ComponentType::Board);
+	if(b == m_Comps.end())
+		throw "Board not initialised";
+
+	auto c = dynamic_cast<Board*>(b->second.get());
+
+	if(c->inCheck(m_playerTurn))
+	{
+		if(m_playerTurn == Colour::White)
+			std::cout<<"Black in check";
+		else
+			std::cout<<"White in check";
+	}
 	
-		
 	auto timer = dynamic_cast<Timer*>(t->second.get());
 
 	if(m_playerTurn == Colour::White)
@@ -463,6 +479,15 @@ void Game::turnSwitch()
 		timer->stopTimer(Colour::Black);
 	}
 	//++m_currentmove;
+
+}
+
+void Game::checkMate(Colour c)
+{
+	if(c == Colour::White)
+		std::cout<<"White wins";
+	else
+		std::cout<<"Black wins";
 
 }
 
@@ -483,6 +508,15 @@ void Game::restart()
 	GameBuilder builder(this, mp_Imp);
 
 	this->createNewGame(builder);
+
+}
+
+void Game::logEnpassant(int moveNo, Key<Board>)
+{
+	m_moves[m_moves.size() -1].m_enpassant = true;
+
+	auto c = (m_playerTurn == Colour::White) ? Colour::Black : Colour::White;
+	m_moves[m_moves.size() -1].m_lostPiece = std::make_tuple(true, std::make_pair(c, Piece::Pawn), moveNo);
 
 }
 
