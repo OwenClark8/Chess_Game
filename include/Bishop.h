@@ -18,7 +18,7 @@ public:
 	Bishop& operator=(const Bishop&) = delete;
 	Bishop& operator=(Bishop&&)      = delete;
 
-	std::list<Location> getMovementOptions() const override;
+	std::list<Location> getMovementOptions(Colour c) const override;
 
 	void movePiece(Location loc) override;
 

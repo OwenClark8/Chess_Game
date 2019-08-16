@@ -52,6 +52,10 @@ public:
 
 	void updateTurnNo(int no);
 
+	void updateCheck(Colour c, bool b);
+
+	void lossMessage(Colour c);
+
 
 
 

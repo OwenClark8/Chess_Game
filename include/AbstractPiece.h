@@ -21,6 +21,7 @@ protected:
 	bool m_unused = true;
 	int  m_moveNo = 0;
 	bool m_default = true;
+	bool m_inCheck = false;
 
 public:
 	AbstractPiece(Board* b, PieceType type, Location pos, PrintImpl* pi, bool defaultGame = true) : Component(pi),
@@ -43,7 +44,9 @@ public:
 
 	//virtual std::unique_ptr<AbstractPiece> clone() const = 0; 
 
-	virtual std::list<Location> getMovementOptions() const = 0; 
+	virtual std::list<Location> getMovementOptions(Colour c) const = 0; 
+
+	virtual void TrimMovements(std::list<Location>& locs, Colour curPlayTurn) const;
 
 	virtual void  draw() const = 0;
 
@@ -65,3 +68,22 @@ public:
 };
 
 #endif
+
+
+
+/**************************************************************************
+ *
+ *  FUNCTION NAME: TrimMovements
+ *
+ *  PURPOSE:       Eleiminate any movemetns that are constrained by being in check          
+ *  
+ *  ARGUMENT LIST:
+ *
+ *  Argument        Type        			IO      Description
+ *
+ *  locs            std::list<location>     I       list of locations piece can move to unconstrained 
+ *   
+ *  out             void   				    O       
+ *
+ *
+ *************************************************************************/

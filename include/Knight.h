@@ -19,7 +19,7 @@ public:
 	Knight& operator=(const Knight&) = delete;
 	Knight& operator=(Knight&&)      = delete;
 
-	std::list<Location> getMovementOptions() const override;
+	std::list<Location> getMovementOptions(Colour c) const override;
 
 	void movePiece(Location loc) override;
 

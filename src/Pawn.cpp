@@ -29,24 +29,30 @@ void Pawn::check2Ahead(std::list<Location>& l) const
 }
 
 
-void Pawn::check1Ahead(std::list<Location>& l) const
+bool Pawn::check1Ahead(std::list<Location>& l) const
 {
 	if(std::get<Colour>(m_type) == Colour::White && std::get<Number>(m_position) != Number::Eight)
 	{
 		auto x = std::make_pair(std::get<Letter>(m_position), std::get<Number>(m_position) + 1 );
 
 		if(std::get<Piece>(mp_gameboard->getPiece(x)) == Piece::Empty)
+		{
 			l.emplace_back(x);
+			return true;
+		}
 	}
 	else if(std::get<Colour>(m_type) == Colour::Black && std::get<Number>(m_position) != Number::One)
 	{
 		auto x = std::make_pair(std::get<Letter>(m_position), std::get<Number>(m_position) - 1 );
 
 		if(std::get<Piece>(mp_gameboard->getPiece(x)) == Piece::Empty)
+		{
 			l.emplace_back(x);
+			return true;
+		}
 	}
 
-	return;
+	return false;
 }
 
 
@@ -126,18 +132,20 @@ void Pawn::checkEnPassant(std::list<Location>& l) const
 	}
 }
 
-std::list<Location> Pawn::getMovementOptions() const
+std::list<Location> Pawn::getMovementOptions(Colour c) const
 {
 	std::list<Location> locs;
 
-	
-	check2Ahead(locs);
-
-	check1Ahead(locs);
+	if(check1Ahead(locs) && m_unused)
+	{
+		check2Ahead(locs);
+	}
 
 	checkSides(locs);
 
 	checkEnPassant(locs);
+
+	this->TrimMovements(locs, c);
 
 	return locs;
 }

@@ -30,7 +30,7 @@ public:
 
 	std::unique_ptr<Square> buildSquare(Location l) const;
 
-	std::unique_ptr<Component> buildBoard(LossBoard* lb) const;
+	std::unique_ptr<Component> buildBoard(LossBoard* lb);
 
 	std::unique_ptr<Component> buildLossBoard() const;
 

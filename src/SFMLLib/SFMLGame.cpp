@@ -110,3 +110,13 @@ void SFMLLib::SFMLGame::makeButtons()
 
 }
 
+void SFMLLib::SFMLGame::updateCheck(Colour c, bool b)
+{
+	mp_imageBoard->updateCheck(c, b);
+}
+
+void SFMLLib::SFMLGame::lossMessage(Colour c)
+{
+	mp_imageBoard->lossMessage(c);
+}
+

@@ -61,7 +61,7 @@ void Square::unselect()
 std::list<Location> Square::clicked() const
 {
 	if(m_allocated)
-		return std::move(mp_piece->getMovementOptions());
+		return std::move(mp_piece->getMovementOptions(std::get<Colour>(mp_piece->getPieceType())));
 	else
 	{
 		std::list<Location> loc = {};

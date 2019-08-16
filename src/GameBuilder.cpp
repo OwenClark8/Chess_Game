@@ -16,9 +16,9 @@ std::unique_ptr<Square> GameBuilder::buildSquare(Location l) const
 	return std::unique_ptr<Square>(new Square(mp_print, l));
 }
 
-std::unique_ptr<Component> GameBuilder::buildBoard(LossBoard* lb) const
+std::unique_ptr<Component> GameBuilder::buildBoard(LossBoard* lb)
 {
-	return std::unique_ptr<Board>(new Board(mp_game, lb, mp_print));
+	return std::unique_ptr<Board>(new Board(mp_game, lb, mp_print, this));
 }
 
 std::unique_ptr<Pawn> GameBuilder::buildPawn(Board* b, Colour c, Location l) const

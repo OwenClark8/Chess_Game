@@ -18,7 +18,7 @@ public:
 	Queen& operator=(const Queen&) = delete;
 	Queen& operator=(Queen&&)      = delete;
 
-	std::list<Location> getMovementOptions() const override;
+	std::list<Location> getMovementOptions(Colour c) const override;
 
 	void movePiece(Location loc) override;
 

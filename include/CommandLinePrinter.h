@@ -44,6 +44,10 @@ public:
 
 	void endBoard() override;
 
+	void drawCheck(Colour c, bool b) override;
+
+	void drawLossMessage(Colour c) override;
+
 	void display(bool tick) const override;
 
 

@@ -36,6 +36,8 @@ protected:
 
 	int m_currentmove = 0;
 
+	int m_displaymove = 0;
+
 	Colour m_playerTurn = Colour::White;
 
 	bool m_tick = true;
@@ -48,7 +50,7 @@ public:
 
 	//void AddBoard(std::unique_ptr<Board> comp);
 	//void RemoveBoard();
-	void createNewGame(const GameBuilder& builder);
+	void createNewGame(GameBuilder& builder);
 	void deleteGame();
 
 	void implementCommand(const Command& com);
@@ -67,6 +69,11 @@ public:
 	void logEnpassant(int moveNo, Key<Board>);
 
 	void checkMate(Colour c);
+
+	Colour getCurrentPlayerTurn() const
+	{
+		return m_playerTurn;
+	}
 
 
 
@@ -89,13 +96,3 @@ Location strToLoc(const std::string& str);
 std::unique_ptr<Command> makeCommand(const std::string& s);
 
 #endif
-
-
-
-// _____
-// |    \  |
-// |    |  |
-// |____/  |
-// |    \  |
-// |    |  |
-// |____/  |_____ 

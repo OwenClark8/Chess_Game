@@ -24,7 +24,7 @@ void Game::removeComponent(ComponentType ct)
 	}
 }
 
-void Game::createNewGame(const GameBuilder& builder)
+void Game::createNewGame(GameBuilder& builder)
 {
 	
 	auto lb = builder.buildLossBoard();
@@ -197,7 +197,7 @@ void Game::deleteGame()
 void Game::draw() const
 {
 	mp_Imp->drawPlayerTurn(static_cast<int>(m_playerTurn));
-	mp_Imp->drawTurnNumber(m_currentmove);
+	mp_Imp->drawTurnNumber(m_displaymove);
 
 	for(auto& comp : m_Comps)
 	{
@@ -263,7 +263,7 @@ void Game::implementCommand(const Command& com)
 			{
 				auto mov = Move(com.m_action.move, std::make_tuple(false, type, 0));
 				m_moves.push_back(Move());
-				c->doMove(mov, {});
+				c->doMove(mov);
 				m_moves[m_moves.size() - 1].m_move = mov.m_move;
 				m_moves[m_moves.size() - 1].m_castle = mov.m_castle;
 				m_moves[m_moves.size() - 1].m_moveNo = mov.m_moveNo;
@@ -274,7 +274,7 @@ void Game::implementCommand(const Command& com)
 			else
 			{
 				auto mov = Move(com.m_action.move, std::make_tuple(true, type, 0));
-				c->doMove(mov, {});
+				c->doMove(mov);
 				m_moves.push_back(mov);
 				// if(m_moves.size() != 1)
 				// 	++m_currentmove;
@@ -291,10 +291,10 @@ void Game::implementCommand(const Command& com)
 					
 					auto mov = Move(std::make_pair(rookfrom, rookto), std::make_tuple(false, type, 0));
 					mov.m_castle = true;
-					c->doMove(mov, {});
+					c->doMove(mov);
 					m_moves[m_moves.size() -1].m_castle = true;
 					m_moves.push_back(mov);
-					++m_currentmove;
+					m_currentmove++;
 
 				}
 
@@ -308,9 +308,9 @@ void Game::implementCommand(const Command& com)
 					auto mov = Move(std::make_pair(rookfrom, rookto), std::make_tuple(false, type, 0));
 					mov.m_castle = true;
 					m_moves[m_moves.size() -1].m_castle = true;
-					c->doMove(mov, {});
+					c->doMove(mov);
 					m_moves.push_back(mov);
-					++m_currentmove;
+					m_currentmove++;
 				}
 			}
 			//c->updateBoard(std::get<0>(com.m_action.move), std::get<1>(com.m_action.move));
@@ -373,24 +373,26 @@ void Game::undo()
 	//auto p = std::find(m_moves.cbegin(), m_moves.cend(), m_currentmove);
 
 	//c->updateBoard(std::get<0>(m_currentmove.m_move), std::get<1>(m_currentmove.m_move));
-	c->undoMove(m_moves.at(--m_currentmove), GameBuilder(this, mp_Imp), {});
+	c->undoMove(m_moves.at(--m_currentmove));
 	
-	if(m_currentmove != 0)
+	if(!m_moves.at(m_currentmove -1 ).m_castle)
 	{
-		if(m_moves.at(m_currentmove -1 ).m_castle)
+		if(m_playerTurn == Colour::White)
 		{
-			//--m_currentmove;
-			this->undo();
+			m_playerTurn = Colour::Black;
 		}
-	}
+		else
+		{
+			m_playerTurn = Colour::White;
+		}
 
-	if(m_playerTurn == Colour::White)
-	{
-		m_playerTurn = Colour::Black;
 	}
 	else
 	{
-		m_playerTurn = Colour::White;
+		if(m_currentmove != 0)
+		{
+				this->undo();
+		}
 	}
 
 }
@@ -408,7 +410,7 @@ void Game::redo()
 	//auto p = std::find(m_moves.cbegin(), m_moves.cend(), m_currentmove);
 
 	//c->updateBoard(std::get<0>(m_currentmove.m_move), std::get<1>(m_currentmove.m_move));
-	c->doMove(m_moves.at(m_currentmove), {});
+	c->doMove(m_moves.at(m_currentmove));
 
 	if(m_moves.at(m_currentmove + 1).m_castle)
 	{
@@ -435,20 +437,21 @@ void Game::turnSwitch()
 {
 
 	++m_currentmove;
+	++m_displaymove;
 
 	auto t = m_Comps.find(ComponentType::Timer);
-	if(t == m_Comps.end())
-	{
+	// if(t == m_Comps.end())
+	// {
 
-		if(m_playerTurn == Colour::White)
-		{
-			m_playerTurn = Colour::Black;
-		}
-		else
-		{
-			m_playerTurn = Colour::White;
-		}
-	}
+	// 	if(m_playerTurn == Colour::White)
+	// 	{
+	// 		m_playerTurn = Colour::Black;
+	// 	}
+	// 	else
+	// 	{
+	// 		m_playerTurn = Colour::White;
+	// 	}
+	// }
 
 	auto b = m_Comps.find(ComponentType::Board);
 	if(b == m_Comps.end())
@@ -456,13 +459,6 @@ void Game::turnSwitch()
 
 	auto c = dynamic_cast<Board*>(b->second.get());
 
-	if(c->inCheck(m_playerTurn))
-	{
-		if(m_playerTurn == Colour::White)
-			std::cout<<"Black in check";
-		else
-			std::cout<<"White in check";
-	}
 	
 	auto timer = dynamic_cast<Timer*>(t->second.get());
 
@@ -479,6 +475,22 @@ void Game::turnSwitch()
 		timer->stopTimer(Colour::Black);
 	}
 	//++m_currentmove;
+
+		auto check = c->inCheck(m_playerTurn, m_playerTurn);
+
+	mp_Imp->drawCheck(m_playerTurn, check);
+
+	if(check)
+	{
+		if(m_playerTurn == Colour::White)
+		{
+			std::cout<<"Black in check";
+		}
+		else
+		{
+			std::cout<<"White in check";
+		}
+	}
 
 }
 
@@ -498,6 +510,8 @@ void Game::restart()
 	m_moves = {};
 
 	m_currentmove = 0;
+
+	m_displaymove = 0;
 
 	m_playerTurn = Colour::White;
 

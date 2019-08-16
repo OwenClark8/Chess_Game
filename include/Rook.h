@@ -18,7 +18,7 @@ public:
 	Rook& operator=(const Rook&) = delete;
 	Rook& operator=(Rook&&)      = delete;
 
-	std::list<Location> getMovementOptions() const override;
+	std::list<Location> getMovementOptions(Colour c) const override;
 
 	void movePiece(Location loc) override;
 

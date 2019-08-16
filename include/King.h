@@ -18,11 +18,11 @@ public:
 
 	void movePiece(Location position) override; 
 
-	std::list<Location> getMovementOptions() const override;
+	std::list<Location> getMovementOptions(Colour c) const override;
 
 	void draw() const override;
 
-	void getTrimmedMovements(const std::list<Location>& locs, Key<Board>);
+	void getTrimmedMovements(std::list<Location>& locs, Colour c) const;
 
 	void computeMove();
 private:

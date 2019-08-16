@@ -1,7 +1,8 @@
 #include "../include/King.h"
 #include "../include/Board.h"
 #include "../include/Square.h"
-//NEED TO CODE ENPOISSANT REQUIR
+#include <algorithm>
+
 
 
 void King::movePiece(Location position)
@@ -12,16 +13,39 @@ void King::movePiece(Location position)
 
 void King::computeMove()
 {
-	m_computeMove = true;
+	//m_computeMove = true;
 }
 
-void King::getTrimmedMovements(const std::list<Location>& locs, Key<Board>)
+void King::getTrimmedMovements(std::list<Location>& locs, Colour c) const
 {
-	m_movements   = locs;
-	m_computeMove = false;
+	if(locs.empty())
+		return;
+	//m_movements   = locs;
+	//m_computeMove = false;
+
+	auto otherlocs = mp_gameboard->getLocsForCheck(std::get<Colour>(m_type), c);
+
+	// std::remove_if(locs.begin(), locs.end(), [&otherlocs](Location l){
+	// 	return (std::find(otherlocs.begin(), otherlocs.end(), l) != otherlocs.end());
+	// });
+
+	auto templocs = locs;
+	auto rit = locs.begin();
+
+	for(auto it = templocs.begin(); it != templocs.end(); ++it)
+	{
+
+		if(std::find(otherlocs.begin(), otherlocs.end(), *it) != otherlocs.end())
+		{
+			locs.erase(rit);
+		}
+		else
+			++rit;
+	}
+
 }
 
-std::list<Location> King::getMovementOptions() const
+std::list<Location> King::getMovementOptions(Colour c) const
 {
 	if(!m_computeMove)
 		return m_movements;
@@ -53,7 +77,7 @@ std::list<Location> King::getMovementOptions() const
 
 		if(std::get<Letter>(m_position) != Letter::H)
 		{
-			auto xR = std::make_pair(std::get<Letter>(m_position) - 1, std::get<Number>(m_position) + 1 );
+			auto xR = std::make_pair(std::get<Letter>(m_position) + 1, std::get<Number>(m_position) + 1 );
 
 			if(std::get<Piece>(mp_gameboard->getPiece(xR)) == Piece::Empty || 
 				std::get<Colour>(mp_gameboard->getPiece(xR)) != std::get<Colour>(m_type))
@@ -88,7 +112,7 @@ std::list<Location> King::getMovementOptions() const
 
 		if(std::get<Letter>(m_position) != Letter::H)
 		{
-			auto xR = std::make_pair(std::get<Letter>(m_position) - 1, std::get<Number>(m_position) - 1 );
+			auto xR = std::make_pair(std::get<Letter>(m_position) + 1, std::get<Number>(m_position) - 1 );
 
 			if(std::get<Piece>(mp_gameboard->getPiece(xR)) == Piece::Empty || 
 				std::get<Colour>(mp_gameboard->getPiece(xR)) != std::get<Colour>(m_type))
@@ -121,6 +145,8 @@ std::list<Location> King::getMovementOptions() const
 	}
 
 	this->checkCastle(locs);
+
+	this->getTrimmedMovements(locs, c);
 
 	return locs;
 }

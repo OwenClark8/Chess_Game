@@ -175,3 +175,13 @@ void CommandLinePrinter::display(bool tick) const
 	CommandLinePrintLib::printGame(mp_game.get(), tick);
 
 }
+
+void CommandLinePrinter::drawCheck(Colour c, bool b)
+{
+
+}
+
+void CommandLinePrinter::drawLossMessage(Colour c)
+{
+	
+}

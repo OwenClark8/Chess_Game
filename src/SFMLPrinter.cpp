@@ -107,3 +107,13 @@ void SFMLPrinter::display(bool tick) const
 	mp_game->display();
 }
 
+void SFMLPrinter::drawCheck(Colour c, bool b)
+{
+	mp_game->updateCheck(c, b);
+}
+
+void SFMLPrinter::drawLossMessage(Colour c)
+{
+	mp_game->lossMessage(c);
+}
+

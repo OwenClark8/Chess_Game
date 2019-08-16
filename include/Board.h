@@ -19,6 +19,8 @@ struct Move{
 	{};
 	Move(void) = default;
 	std::pair<Location, Location> m_move;
+	// bool: 0 has been lost, 1: has not
+	// int: 
 	std::tuple<bool, PieceType, int>    m_lostPiece;
 	bool 						  m_castle= false;
 	int 						  m_moveNo = 0;
@@ -33,9 +35,12 @@ protected:
 	 //Move m_currentMove;
 	 Game* mp_game;
 	 LossBoard * mp_lossBoard;
+	 GameBuilder* mp_builder;
+	 std::pair<bool, bool> m_check = {false, false};
 
 public: 
-	Board(Game* game, LossBoard* lb, PrintImpl* pi) : Component(pi), mp_game(game), mp_lossBoard(lb)
+	Board(Game* game, LossBoard* lb, PrintImpl* pi, GameBuilder* gb) : Component(pi), mp_game(game), mp_lossBoard(lb),
+					mp_builder(gb)
 	{};
 
 	//Board(const Board& otherboard);
@@ -56,9 +61,9 @@ public:
 
 	void updateBoard(const Location& movefrom, const Location& moveto);
 
-	void doMove(Move& mov, Key<Game>);
+	void doMove(Move& mov);
 
-	void undoMove(const Move& mov, const GameBuilder& b, Key<Game>);
+	void undoMove(const Move& mov);
 
 	void addSquare(Location loc, std::unique_ptr<Square> sqr);
 	void removeSquare(const Location& loc);
@@ -71,7 +76,11 @@ public:
 
 	void empassantRemove(const Location& loc, Key<Pawn>);
 
-	bool inCheck(Colour c) const;
+	bool inCheck(Colour c, Colour pturn);
+
+	bool getCheck(Colour c, Key<AbstractPiece>) const; 
+
+	std::list<Location> getLocsForCheck(Colour c, Colour pturn) const;
 
 
 	//void checkCastle(Colour c) const;

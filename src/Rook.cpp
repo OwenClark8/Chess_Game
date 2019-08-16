@@ -9,7 +9,7 @@ void Rook::movePiece(Location loc)
 }
 
 
-std::list<Location> Rook::getMovementOptions() const
+std::list<Location> Rook::getMovementOptions(Colour c) const
 {
 
 	std::list<Location> locs;
@@ -17,6 +17,8 @@ std::list<Location> Rook::getMovementOptions() const
 	checkR(locs); 
 	checkL(locs); 
 	checkD(locs); 
+
+	this->TrimMovements(locs, c);
 
 	return locs;
 

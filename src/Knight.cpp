@@ -9,7 +9,7 @@ void Knight::movePiece(Location loc)
 }
 
 
-std::list<Location> Knight::getMovementOptions() const
+std::list<Location> Knight::getMovementOptions(Colour c) const
 {
 
 	std::list<Location> locs;
@@ -17,6 +17,8 @@ std::list<Location> Knight::getMovementOptions() const
 	checkL(locs);
 	checkR(locs);
 	checkD(locs);
+
+	this->TrimMovements(locs, c);
 
 	return locs;
 }

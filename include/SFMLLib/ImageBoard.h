@@ -9,6 +9,7 @@
 #include <string>
 
 #include <SFML/Graphics.hpp>
+#include "defs.h"
 
 
 namespace SFMLLib
@@ -31,6 +32,10 @@ public:
 	void updatePlayerTurn(int i);
 
 	void updateTurnNo(int i);
+
+	void updateCheck(Colour c, bool b);
+
+	void lossMessage(Colour c);
 	
 private:
 
@@ -45,6 +50,10 @@ private:
 	sf::Font m_font;
 
 	std::array<sf::Text, 2> m_turnInfo = {{ {}, {} }};
+
+	std::pair<sf::Text, bool> m_checkInfo = {{}, false};
+
+	std::pair<sf::Text, bool> m_lossMessage = {{}, false};
 
 
 };

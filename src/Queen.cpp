@@ -9,7 +9,7 @@ void Queen::movePiece(Location loc)
 }
 
 
-std::list<Location> Queen::getMovementOptions() const
+std::list<Location> Queen::getMovementOptions(Colour c) const
 {
 
 	std::list<Location> locs;
@@ -21,6 +21,8 @@ std::list<Location> Queen::getMovementOptions() const
 	checkR(locs); 
 	checkL(locs); 
 	checkD(locs); 
+
+	this->TrimMovements(locs, c);
 
 	return locs;
 

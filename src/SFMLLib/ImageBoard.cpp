@@ -158,6 +158,20 @@ void ImageBoard::newGame(std::string font)
 	m_turnInfo[1].setColor(sf::Color::Black);
 	m_turnInfo[1].setStyle(sf::Text::Bold);
 
+	std::get<sf::Text>(m_checkInfo).setFont(m_font);
+	std::get<sf::Text>(m_checkInfo).setCharacterSize(12);
+	std::get<sf::Text>(m_checkInfo).setPosition(595.f, 575.f );
+	std::get<sf::Text>(m_checkInfo).setColor(sf::Color::Black);
+	std::get<sf::Text>(m_checkInfo).setStyle(sf::Text::Bold);
+	std::get<bool>(m_checkInfo) = false;
+
+	std::get<sf::Text>(m_lossMessage).setFont(m_font);
+	std::get<sf::Text>(m_lossMessage).setCharacterSize(12);
+	std::get<sf::Text>(m_lossMessage).setPosition(595.f, 575.f );
+	std::get<sf::Text>(m_lossMessage).setColor(sf::Color::Black);
+	std::get<sf::Text>(m_lossMessage).setStyle(sf::Text::Bold);
+	std::get<bool>(m_lossMessage) = false;
+
 }
 
 void ImageBoard::setColour(const std::array<std::array<bool, 8>, 8> tiles)
@@ -237,6 +251,15 @@ void ImageBoard::draw(sf::RenderTarget& target, sf::RenderStates states) const
     target.draw(m_frame, states);
     target.draw(m_turnInfo[0], states);
     target.draw(m_turnInfo[1], states);
+    if(std::get<bool>(m_checkInfo))
+    {
+    	target.draw(std::get<sf::Text>(m_checkInfo), states);
+    }
+
+    if(std::get<bool>(m_lossMessage))
+    {
+    	target.draw(std::get<sf::Text>(m_lossMessage), states);
+    }
 }
 
 void ImageBoard::updatePlayerTurn(int i)
@@ -254,4 +277,23 @@ void ImageBoard::updateTurnNo(int i)
 	std::string str = "Turn Number: ";
 	m_turnInfo[1].setString(str + std::to_string(i));
 
+}
+
+void ImageBoard::updateCheck(Colour c, bool b)
+{
+	if(b)
+	{
+		std::string str = " in check";
+		auto col = (c == Colour::White) ? "White" : "Black";
+		std::get<sf::Text>(m_checkInfo).setString(col + str);
+	}
+	std::get<bool>(m_checkInfo) = b;
+}
+
+void ImageBoard::lossMessage(Colour c)
+{
+	std::string str = " wins";
+	auto col = (c == Colour::White) ? "White" : "Black";
+	std::get<sf::Text>(m_lossMessage).setString(col + str);
+	std::get<bool>(m_lossMessage) = true;
 }

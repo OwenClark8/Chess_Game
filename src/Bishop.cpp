@@ -9,7 +9,7 @@ void Bishop::movePiece(Location loc)
 }
 
 
-std::list<Location> Bishop::getMovementOptions() const
+std::list<Location> Bishop::getMovementOptions(Colour c) const
 {
 
 	std::list<Location> locs;
@@ -17,6 +17,8 @@ std::list<Location> Bishop::getMovementOptions() const
 	checkURDiag(locs); 
 	checkLRDiag(locs); 
 	checkLLDiag(locs); 
+
+	this->TrimMovements(locs, c);
 
 	return locs;
 

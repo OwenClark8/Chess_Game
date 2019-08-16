@@ -42,6 +42,10 @@ public:
 
 	virtual void endBoard() = 0;
 
+	virtual void drawCheck(Colour c, bool b) = 0;
+
+	virtual void drawLossMessage(Colour c) = 0;
+
 	virtual void display(bool tick) const = 0;
 
 };

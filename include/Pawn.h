@@ -30,7 +30,7 @@ public:
 
 	//std::unique_ptr<AbstractPiece> clone() override;
 
-	std::list<Location> getMovementOptions() const override;
+	std::list<Location> getMovementOptions(Colour c) const override;
 
 	void draw() const override;
 
@@ -44,7 +44,7 @@ private:
 
 	void check2Ahead(std::list<Location>& l) const;
 
-	void check1Ahead(std::list<Location>& l) const;
+	bool check1Ahead(std::list<Location>& l) const;
 
 	void checkSides(std::list<Location>& l) const;
 
