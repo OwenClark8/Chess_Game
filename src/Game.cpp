@@ -373,8 +373,20 @@ void Game::undo()
 	//auto p = std::find(m_moves.cbegin(), m_moves.cend(), m_currentmove);
 
 	//c->updateBoard(std::get<0>(m_currentmove.m_move), std::get<1>(m_currentmove.m_move));
-	c->undoMove(m_moves.at(--m_currentmove));
-	
+       	c->undoMove(m_moves.at(--m_currentmove));
+	--m_displaymove;
+	if(m_currentmove == 0)
+	{
+		if(m_playerTurn == Colour::White)
+		{
+			m_playerTurn = Colour::Black;
+		}
+		else
+		{
+			m_playerTurn = Colour::White;
+		}
+		return;
+	}	
 	if(!m_moves.at(m_currentmove -1 ).m_castle)
 	{
 		if(m_playerTurn == Colour::White)
@@ -392,6 +404,7 @@ void Game::undo()
 		if(m_currentmove != 0)
 		{
 				this->undo();
+				++m_displaymove;
 		}
 	}
 
@@ -411,13 +424,20 @@ void Game::redo()
 
 	//c->updateBoard(std::get<0>(m_currentmove.m_move), std::get<1>(m_currentmove.m_move));
 	c->doMove(m_moves.at(m_currentmove));
+	
 
-	if(m_moves.at(m_currentmove + 1).m_castle)
+
+	if(m_currentmove != m_moves.size() -1)
 	{
-		++m_currentmove;
-		this->redo();
+		if(m_moves.at(m_currentmove + 1).m_castle)
+		{
+			++m_currentmove;
+			this->redo();
+			--m_displaymove;
+		}
 	}
 	++m_currentmove;
+	++m_displaymove;
 	if(m_playerTurn == Colour::White)
 	{
 		m_playerTurn = Colour::Black;
